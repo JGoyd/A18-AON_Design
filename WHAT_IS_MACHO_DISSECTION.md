@@ -25,9 +25,9 @@ A program that knows how to parse the Mach-O header can walk that structure with
 
 **Firmware** is software that runs on a chip other than the main CPU. Modern phones contain dozens of small processors — for audio, for the camera, for the modem, for the touch screen, for the Secure Enclave, and, on the Apple A18, for the Always-On Processor. Each of those processors runs its own code, loaded at power-on. That code is the firmware.
 
-Firmware is usually invisible to the user. It does not appear in the app list. It is not something you can open or inspect through the iPhone's settings. It lives on the chip, runs under the chip's own control, and exchanges messages with the main operating system through hardware mailboxes.
+Firmware is usually invisible to the operating system's user-facing surface. It does not appear in process lists. It is not something the OS exposes for inspection. It lives on the chip, runs under the chip's own control, and exchanges messages with the main application processor (AP) through hardware mailboxes.
 
-When Apple ships an iPhone, the firmware for each coprocessor is embedded inside the main iOS image. When iOS boots, it loads each coprocessor's firmware onto the appropriate chip. The file examined in this repository — `aopfw-rose.macho` — is the firmware that Apple loads onto the A18's **AOP2** (Always-On Processor v2).
+When Apple ships a system image for A18-class silicon, the firmware for each on-die coprocessor is embedded inside the main OS bundle. At boot, the loader places each coprocessor's firmware onto the appropriate silicon block. The file examined in this repository — `aopfw-rose.macho` — is the firmware that Apple loads onto the A18's **AOP2** (Always-On Processor, second generation).
 
 ---
 

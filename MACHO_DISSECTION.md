@@ -4,7 +4,7 @@
 **Size:** 2,457,600 bytes
 **Type:** Mach-O 64-bit arm64 preload executable, flags `NOUNDEFS`
 **Codename:** Rose
-**Loaded by:** `com.apple.driver.AppleAOP2` on iPhone 16e (A18, t8150)
+**Loaded by:** `com.apple.driver.AppleAOP2` on Apple A18 silicon (`t8150`)
 
 ---
 
@@ -116,7 +116,7 @@ AppleAOPAudioFirmware-540.66~2734  built: Mar 12 2026 20:48:04
 RTKitAudioFramework-540.4~2150     built: Mar  5 2026 23:10:35
 ```
 
-Build dates land 15–22 days before the iPhone 16e Mar 27 2026 capture. This is current production firmware.
+Build dates are recent relative to the sample capture — current production firmware.
 
 ## 5. The Sensor Reach
 

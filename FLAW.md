@@ -1,6 +1,9 @@
 # The A18 Die Architecture Flaw
 
-**SoC:** Apple A18 (`t8150`) — iPhone 16e and siblings.
+**Subject:** Apple A18 SoC — silicon identifier `t8150`.
+**Block under study:** AOP2 (Always-On Processor, second generation) — RTBuddy slave processor, published to the main application processor (AP) through `com.apple.driver.AppleAOP2`.
+**Fabric:** `arm-io,t8150` — the A18's on-die bus and peripheral hierarchy.
+**Adjacent silicon:** SEP (Secure Enclave Processor), Exclave compartment (hypervisor-enforced memory domain), DART IOMMU blocks, SPU (Secure Processing Unit).
 
 ---
 
@@ -104,6 +107,3 @@ Seven steps. Three files. Any A18 device. Ten minutes.
 
 > *The A18 die wires a single coprocessor — whose state nothing on the device can independently observe — both ownership of the device's most privacy-sensitive sensors and DMA reach into the device's most privileged memory compartment. The privacy model of the platform reduces to faith in a witness vouching for itself.*
 
----
-
-**Author:** Joseph Goydish II

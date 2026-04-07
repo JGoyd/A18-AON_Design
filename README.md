@@ -1,94 +1,90 @@
 # 🌹 Rose-Colored Glasses
 
-### *iOS can only see what Rose lets it see. Rose is the firmware on a coprocessor nothing on the phone can watch. This is a story about who actually owns your microphone.*
+### *The application processor on the A18 can only see what Rose lets it see. Rose is the firmware on a coprocessor nothing else on the die can watch. This is a study of who actually owns the sensors.*
 
 ---
 
 ## The Short Version
 
-Apple's A18 chip contains a little coprocessor called **AOP2** — the Always-On Processor, second generation. It's the thing that listens for "Hey Siri" while your phone is locked in your pocket. It's also the thing that reads your touch screen, your motion sensors, your light sensor, your Bluetooth, and your UWB radios. And on the A18, *it has a hardware wire that lets it read the memory inside the Exclave* — the hypervisor-protected region that's supposed to be the most locked-down part of the chip.
+The **Apple A18** (`t8150`) is a system-on-chip. Inside it are several independent processors that share the die: the main application processor cluster (AP), the Secure Enclave Processor (SEP), the Secure Processing Unit (SPU), and a small always-on coprocessor called **AOP2** — the Always-On Processor, second generation.
 
-AOP2 runs its own firmware. Apple calls that firmware **Rose**. Rose is a complete operating system. It has its own bootloader, its own page tables, its own heap, its own runtime patch surface, and ten separate sensor-handling programs bundled inside it. It boots before iOS does. It keeps running when iOS thinks the phone is idle. And when iOS wants to know what AOP2 is up to, iOS asks Rose — through a channel Rose owns, over 24 parallel opaque message queues that nobody audits.
+AOP2 is not a peripheral. It is a slave processor in its own right, published to the AP through the `RTBuddy` harness as `com.apple.driver.AppleAOP2`. At the silicon level, it is the owner of the microphone, the touch digitizer, the ambient light sensor, the motion stack, the Doppler sensor, Bluetooth, and Ultra-Wideband. It has its own IOMMU (`dart-aop@FC0000`) with two DMA mapper nubs — one standard, and one named `mapper-exclave-aop@1` that opens a hardware DMA window into the **Exclave** memory compartment, the hypervisor-enforced memory domain that holds biometric state, protected audio buffers, and SEP-brokered material.
 
-iOS is wearing rose-colored glasses. It's been wearing them since the chip powered on. It can only see what Rose shows it.
+AOP2 runs its own firmware. Apple's codename for it, baked into the binary, is **Rose**. Rose is a complete real-time operating system. It has its own boot stub, its own page tables, its own heap, its own runtime patch table, its own Apple Packet Filter VM, its own log compartment, and ten separate sensor-handling programs bundled inside it. It boots from Apple's preload image at SoC power-on, before the AP is running iOS, and it stays resident as long as the chip has power. When the AP wants to know what AOP2 is doing, the AP sends a message through one of 24 opaque queues (`AOP2Endpoint1..AOP2Endpoint24`) — and Rose answers. There is no second observer on the die.
+
+The AP is wearing rose-colored glasses. It has been wearing them since the chip powered on. It can only see what Rose shows it.
 
 ---
 
 ## The Big Deal
 
-This isn't a bug. Bugs are things Apple can patch. **This is the wiring of the chip.** The device tree — Apple's own description of the hardware — has a line in it that looks like this:
+This is not a bug. Bugs are things a software update can fix. **This is the wiring of the chip.** The device tree — the SoC's own self-description, enumerated from `arm-io,t8150` at boot — contains this line:
 
 ```
 mapper-exclave-aop@1   <IODARTMapperNub>
 ```
 
-That's a DMA window from AOP2 into the Exclave compartment. The wire exists. iOS doesn't create it. iOS *discovers* it at boot. The only way to remove it is to redesign the silicon.
+That line describes a DMA window from AOP2 into the Exclave memory compartment. The wire is part of the silicon fabric. The OS does not create it; the OS *discovers* it at enumeration time. Removing it requires respinning the die.
 
-Meanwhile, the orange microphone dot on your screen only lights up when the *main* processor opens an audio session. AOP2 never opens one. AOP2 reads the mic directly. So the dot stays dark, the App Privacy Report stays empty, TCC has nothing to log, and the only witness that could tell you the mic was live is Rose — who won't, because Rose decides what to say.
+Meanwhile, every monitoring surface the platform exposes is downstream of AOP2 and depends on AOP2 to report honestly. The AP-side audio session lifecycle log. The privacy indicator the OS lights when an application opens a microphone. The permission-mediation database. The firehose log stream. All of them see what Rose tells them, because Rose is upstream of the pipeline every one of those observers taps into.
 
-Every privacy guarantee Apple makes about the A18 reduces to one sentence: *"trust us, Rose is honest."* That is not a security model. That is a vibe.
+Every privacy property the platform advertises for A18 silicon reduces to one unwitnessable assumption: **Rose is honest, and we know this because Rose says so.** A trust model that depends on a witness vouching for itself is not a trust model.
+
+---
+
+## The Silicon Under Study
+
+| Field | Value |
+|---|---|
+| SoC | Apple A18 |
+| Silicon identifier | `t8150` |
+| Fabric | `arm-io,t8150` |
+| Coprocessor | AOP2 — Always-On Processor, second generation |
+| Coprocessor harness | `RTBuddy(AOP2)` — `IOSlaveProcessor` |
+| Coprocessor kext | `com.apple.driver.AppleAOP2` |
+| Coprocessor IOMMU | `dart-aop@FC0000` with mapper nubs `mapper-aop@0` and `mapper-exclave-aop@1` |
+| Coprocessor firmware | `aopfw-rose.macho` — codename **Rose** |
+| Firmware SHA-256 | `dc6bda7e7003413cddf3f0264edf6a445c10555b9e2d2d45906ddb0ec332135d` |
+| Firmware type | Mach-O 64-bit arm64 preload executable, `NOUNDEFS` |
+| Adjacent silicon | SEP (Secure Enclave Processor), SPU (Secure Processing Unit), Exclave compartment |
 
 ---
 
 ## The Files
 
-Read them in order. You'll be up to speed in under fifteen minutes.
+Read them in order. Under fifteen minutes to the full picture.
 
 ### 📄 [`FLAW.md`](FLAW.md) — *The die architecture flaw*
-The proof. Three structural properties of the A18 die, each anchored to a single line from a file Apple's own software produced. No reverse engineering, no exploitation, no special tools. **The wiring is the argument.** 110 lines.
+The proof, anchored entirely in the A18's own hardware enumeration. Three structural properties — sensor sovereignty, privileged DMA reach into the Exclave, and silicon-level opacity — composed on the same die. No reverse engineering, no exploitation, no special tools. **The wiring is the argument.**
 
 ### 📄 [`EXPLOIT.md`](EXPLOIT.md) — *How Rose gets weaponized*
-Six stages from foothold to covert egress. Four concrete attack scenarios. A table of every iOS detection surface and why none of them can see any of it. 120 lines.
+Six stages from foothold to covert egress, plus four concrete scenarios. A table of every platform-provided detection surface and why none of them can see any of it. Takes `FLAW.md` as given and walks through what the wiring enables.
 
 ### 📄 [`WHAT_IS_MACHO_DISSECTION.md`](WHAT_IS_MACHO_DISSECTION.md) — *Plain-language methodology*
-What a Mach-O file is, what it means to "dissect" one, and why we bothered. Written so a smart friend with no forensics background can follow along. 88 lines.
+What a Mach-O file is, what it means to "dissect" one, and why we bothered. Written so a reader with no forensics background can follow the methodology before reading the dissection itself.
 
 ### 📄 [`MACHO_DISSECTION.md`](MACHO_DISSECTION.md) — *Opening up Rose*
-The anatomy of `aopfw-rose.macho`, the firmware Apple ships onto AOP2. Segment map, runtime patchbay, Apple Packet Filter region, ten embedded sensor firmwares including the always-on mic trigger and the touch digitizer. Turns out Rose is a lot bigger than a "driver." 153 lines.
+The anatomy of `aopfw-rose.macho`: segment and section map, RTKit operating-system scaffolding, runtime patchbay, Apple Packet Filter region, compartment layout, and ten embedded sensor firmwares including the always-on voice trigger, the touch digitizer, the Doppler sensor, and the ambient light stack. Establishes that the code sitting on the flawed side of the wiring is large, capable, and exactly as structurally privileged as the wiring allows it to be.
 
 ---
 
-## Can I Check This Myself?
+## Reproducing The Claims
 
-Yes. Any iPhone with an A18 will do. You don't need to jailbreak anything, you don't need to pay for anything, and you don't need any tool that didn't ship on the phone.
+Every structural claim in [`FLAW.md`](FLAW.md) is anchored to one of three files that Apple-produced tooling generates on stock A18 silicon:
 
-1. Hold Side + Volume Up + Volume Down for one second to trigger a `sysdiagnose`.
-2. Wait ~10 minutes. Grab it from **Settings → Privacy & Security → Analytics & Improvements → Analytics Data**.
-3. Open `ioreg/IOService.txt` and search for `dart-aop@FC0000`. Two mapper nubs underneath — one normal, one named `mapper-exclave-aop@1`.
-4. Search the same file for `AOP2Endpoint1`. Count 1 through 24.
-5. Open `ioreg/IODeviceTree.txt`. Search for `ExclavesAudioProxyInputStreamDriverInterface`. It's instantiated.
-6. Open `logs/AFK/AOP2.plist`. Look for `AOP2AppTightbeamEndpoint`, `RTKExclaveTBEndpoint`, `RTKIntercompartmentTBEndpoint`, and the `ap.client-fwd`/`ap.client-rev` pair.
+- `ioreg/IOService.txt` — the IOKit registry, as dumped by Apple's own `ioreg` utility.
+- `ioreg/IODeviceTree.txt` — IOKit diagnostics, class instance counts.
+- `logs/AFK/AOP2.plist` — the AFK (Apple Firmware Kit) service tree, serialized at diagnostic-capture time.
 
-That's it. Six steps, three files, ten minutes. The whole repo is just an argument about what those six steps mean.
-
----
-
-## Specimen Under Study
-
-| Field | Value |
-|---|---|
-| SoC | Apple A18 (`t8150`) |
-| Device | iPhone 16e (D53G, iPhone17,5) |
-| iOS build | 23E246 |
-| Coprocessor | AOP2 — Always-On Processor v2 |
-| Kext | `com.apple.driver.AppleAOP2` |
-| Firmware | `aopfw-rose.macho` — aka **Rose** |
-| Firmware SHA-256 | `dc6bda7e7003413cddf3f0264edf6a445c10555b9e2d2d45906ddb0ec332135d` |
-| Capture | `sysdiagnose_2026.03.27_14-56-11-0600` |
+All three are produced by Apple software running on Apple silicon, with no third-party instrumentation. All three appear on any system running A18 silicon. See [`FLAW.md`](FLAW.md) § Reproduction for the exact search steps.
 
 ---
 
 ## What This Is Not
 
-- **Not a CVE.** CVEs describe defects against a documented security boundary. This is the boundary itself being structurally broken.
-- **Not an exploit drop.** No working exploit code is published here. This is an anatomy lesson, not a weapon.
-- **Not a bug report.** You can't file a bug against a wire.
-- **Not a cry for a patch.** There is no patch for this, and that is exactly the problem.
+- **Not a CVE.** CVEs describe defects against a documented security boundary. This describes the boundary itself being structurally broken.
+- **Not an exploit release.** No working exploit code is published in this repository. The walkthrough describes the surface the wiring exposes; it does not ship a payload.
+- **Not a bug report.** You cannot file a bug against a wire in a fabric that has already been taped out.
+- **Not a request for a patch.** There is no patch for this, and that is exactly the point.
 
-It's a structural claim: the A18 die ships with a trust topology that is incompatible with the privacy story Apple tells about the platform. The evidence is in files Apple wrote, on a chip Apple designed, collected by a tool Apple ships. Anyone with an A18 can reproduce the findings in the time it takes to make a cup of coffee.
-
----
-
-## Author
-
-**Joseph Goydish II** — independent security researcher. Likes chips, dislikes surveillance, has a lot of `sysdiagnose` archives.
+It is a structural claim about the A18 die: that the composition of sensor ownership, Exclave DMA reach, and coprocessor opacity — all wired at the silicon level, all visible in the device tree, all unreachable from any observer the die provides — is incompatible with the privacy properties the platform advertises. The evidence is in files the platform itself produces. Anyone with a copy of those files can verify the claim in minutes.
