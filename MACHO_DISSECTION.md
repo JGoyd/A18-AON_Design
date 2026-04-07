@@ -44,7 +44,7 @@ LC_SEGMENT_64 __DATA          vmaddr=0x00110a000  vmsize=0xfb000   prot=RW-
     _rtk_heap                 addr=0x00111b800 size=0x034750      <-- 209 KB heap
     __const                   addr=0x00114ff50 size=0x012988
     __data                    addr=0x0011628d8 size=0x024ae0
-    _rtk_patchbay             addr=0x0011873b8 size=0x00036f      <-- runtime patchbay
+    _rtk_patchbay             addr=0x0011873b8 size=0x00036f      <-- runtime sticker table
     __version                 addr=0x001187728 size=0x000008
     _spu_service              addr=0x001187730 size=0x000870      <-- SPU services
     _spu_endpoint             addr=0x001187fa0 size=0x000090      <-- SPU endpoint
@@ -84,7 +84,7 @@ This is not a single device driver. It is a **complete RTKit operating system** 
 | `_rtk_init_stack`, `_rtk_irq_stack`, `_rtk_exc_stack`, `_rtk_ext_stack` | Four discrete stack regions for init, IRQ, exception, and extended contexts — kernel-class architecture. |
 | `_rtk_heap` (209 KB) + `_rtk_threads` | Dynamic allocation and threading inside AOP2. |
 | `_spu_stack`, `_spu_service`, `_spu_endpoint` | Embedded **SPU** (Secure Processing Unit) integration — AOP2 talks directly to the SPU silicon block. |
-| `_rtk_patchbay` (0x36F bytes) | **Runtime code patchbay.** AOP2 firmware can be patched at runtime via the patchbay table. This is a live code-modification surface inside the coprocessor. |
+| `_rtk_patchbay` (0x36F bytes) | **Runtime sticker table.** A 62-entry `GKTS` TLV table holding per-device and per-boot configuration — identity (ECID, nonce, KASLR slide, PRNG seed), runtime layout, behavior flags, IO base addresses, and a pointer to `_rtk_tunables`. The loader writes into this region at bring-up, before AOP2 begins executing. Full enumeration in [`PATCHBAY.md`](PATCHBAY.md). |
 | `_rtk_tunables` | Runtime-tunable parameters — behavior can be changed without reflashing. |
 | `__cmevent` (compartment events, 0x5A0 bytes) | The firmware emits and consumes events scoped to security compartments. |
 | `__gxf_data` | **Guarded Execution Framework** data region. GXF is the same hardware-isolation primitive used in PPL and Exclave enforcement. AOP2 firmware participates in GXF. |
@@ -150,4 +150,4 @@ These are not contiguous with the main `__TEXT`/`__DATA` blob (which lives at `0
 
 ---
 
-**Status:** firmware structure documented. Remaining work: enumerate `_rtk_patchbay` entries, resolve `__apf_list` rules, dump `__OS_LOG __string` against the AP-side `tracev3` uuidtext catalog to confirm which AOP2 messages reach the AP firehose.
+**Status:** firmware structure documented. `_rtk_patchbay` enumerated in full — see [`PATCHBAY.md`](PATCHBAY.md). Remaining work: resolve `__apf_list` rules, dump `__OS_LOG __string` against the AP-side `tracev3` uuidtext catalog to confirm which AOP2 messages reach the AP firehose.

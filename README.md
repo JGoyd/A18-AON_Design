@@ -66,7 +66,10 @@ Six stages from foothold to covert egress, plus four concrete scenarios. A table
 What a Mach-O file is, what it means to "dissect" one, and why we bothered. Written so a reader with no forensics background can follow the methodology before reading the dissection itself.
 
 ### 📄 [`MACHO_DISSECTION.md`](MACHO_DISSECTION.md) — *Opening up Rose*
-The anatomy of `aopfw-rose.macho`: segment and section map, RTKit operating-system scaffolding, runtime patchbay, Apple Packet Filter region, compartment layout, and ten embedded sensor firmwares including the always-on voice trigger, the touch digitizer, the Doppler sensor, and the ambient light stack. Establishes that the code sitting on the flawed side of the wiring is large, capable, and exactly as structurally privileged as the wiring allows it to be.
+The anatomy of `aopfw-rose.macho`: segment and section map, RTKit operating-system scaffolding, runtime sticker table, Apple Packet Filter region, compartment layout, and ten embedded sensor firmwares including the always-on voice trigger, the touch digitizer, the Doppler sensor, and the ambient light stack. Establishes that the code sitting on the flawed side of the wiring is large, capable, and exactly as structurally privileged as the wiring allows it to be.
+
+### 📄 [`PATCHBAY.md`](PATCHBAY.md) — *The sticker table, enumerated*
+A complete walk of Rose's `_rtk_patchbay` section — 62 entries, 879 bytes, zero leftover. Establishes that Rose's behavior (log level, debug state, dev mode, runtime layout, boot gating) is a set of slots the loader fills in at boot, not values fixed at build time. Full per-entry dump in [`evidence_patchbay.txt`](evidence_patchbay.txt).
 
 ---
 

@@ -1,0 +1,76 @@
+aopfw-rose.macho  _rtk_patchbay (sticker table)
+file offset: 0x001883b8   size: 879 bytes   entries: 62
+format: GKTS header (16 bytes) + TLV entries (tag4 + size4 + payload)
+
+header:
+  magic     : b'GKTS'  (FourCC "STKG" little-endian)
+  field1    : 0x8
+  field2    : 0xaff
+
+   off  tag_raw  fourcc  size  payload                             interp
+--------------------------------------------------------------------------------------------------------------
+0x0010  c2ir    ri2c       4  00000000                            u32 = 0x0 (0)
+0x001c  p0CE    EC0p       8  0000000000000000                    u64 = 0x0
+0x002c  p0DE    ED0p       8  0000000000000000                    u64 = 0x0
+0x003c  laCn    nCal       1  01                                  u8 = 1
+0x0045  Hlca    aclH       4  00000000                            u32 = 0x0 (0)
+0x0051  DUJd    dJUD       1  00                                  u8 = 0
+0x005a  Epan    napE       4  01000000                            u32 = 0x1 (1)
+0x0066  Hsid    disH       4  00000000                            u32 = 0x0 (0)
+0x0072  nObb    bbOn       4  00000000                            u32 = 0x0 (0)
+0x007e  PL2k    k2LP       4  00000000                            u32 = 0x0 (0)
+0x008a  IP2k    k2PI       4  00000000                            u32 = 0x0 (0)
+0x0096  TSFb    bFST       4  00000000                            u32 = 0x0 (0)
+0x00a2  DOIk    kIOD       4  00000000                            u32 = 0x0 (0)
+0x00ae  rTEp    pETr       4  00000000                            u32 = 0x0 (0)
+0x00ba  Rsid    disR       4  00000000                            u32 = 0x0 (0)
+0x00c6  c2is    si2c       4  00000000                            u32 = 0x0 (0)
+0x00d2  gila    alig       4  00000000                            u32 = 0x0 (0)
+0x00de  putl    ltup       4  00000000                            u32 = 0x0 (0)
+0x00ea  tPOA    AOPt       4  00000000                            u32 = 0x0 (0)
+0x00f6  Idrb    brdI       4  00000000                            u32 = 0x0 (0)
+0x0102  Ivoc    covI       4  00000000                            u32 = 0x0 (0)
+0x010e  gbda    adbg       4  00000000                            u32 = 0x0 (0)
+0x011a  DILS    SLID       8  0000000000000000                    u64 = 0x0
+0x012a  SRSA    ASRS       8  0000000000000000                    u64 = 0x0
+0x013a  GFCM    MCFG       8  0000000000000000                    u64 = 0x0
+0x014a  SSSC    CSSS       8  0000000000000000                    u64 = 0x0
+0x015a  qF8v    v8Fq       4  00000000                            u32 = 0x0 (0)
+0x0166  LRSD    DSRL       1  00                                  u8 = 0
+0x016f  SVSD    DSVS       8  0000000000000000                    u64 = 0x0
+0x017f  LCSD    DSCL       8  0000000000000000                    u64 = 0x0
+0x018f  ZSTR    RTSZ       4  00502000                            u32 = 0x205000 (2117632)
+0x019b  BPTP    PTPB       8  0000000000000000                    u64 = 0x0
+0x01ab  TNGI    IGNT       1  00                                  u8 = 0
+0x01b4  oeNS    SNeo       1  00                                  u8 = 0
+0x01bd  SEBC    CBES       8  0000000000000000                    u64 = 0x0
+0x01cd  ECAP    PACE       8  0000000000000000                    u64 = 0x0
+0x01dd  BVTP    PTVB       8  0000000000000000                    u64 = 0x0
+0x01ed  sP1T    T1Ps       8  0000000000000000                    u64 = 0x0
+0x01fd  BtpG    GptB       8  0000000000000000                    u64 = 0x0
+0x020d  StpG    GptS       8  0040000000000000                    u64 = 0x4000
+0x021d  BlpP    PplB       8  0000000000000000                    u64 = 0x0
+0x022d  SPTP    PTPS       8  0000000000000000                    u64 = 0x0
+0x023d  SZSD    DSZS       8  0000000000000000                    u64 = 0x0
+0x024d  LZSD    DSZL       8  0000000000000000                    u64 = 0x0
+0x025d  S2xG    Gx2S       8  0000000000000000                    u64 = 0x0
+0x026d  LLTR    RTLL       1  01                                  u8 = 1
+0x0276  SNUT    TUNS       8  4889180100000000                    u64 = 0x1188948
+0x0286  ZNUT    TUNZ       4  e8010000                            u32 = 0x1e8 (488)
+0x0292  GNRP    PRNG      32  0000000000000000000000000000000000  bytes[32] (PRNG seed slot)
+0x02ba  DICE    ECID       8  0000000000000000                    u64 = 0x0
+0x02ca  CNON    NONC       8  0000000000000000                    u64 = 0x0
+0x02da  OTTR    RTTO       8  0000000000000000                    u64 = 0x0
+0x02ea  ARcM    McRA       4  00400000                            u32 = 0x4000 (16384)
+0x02f6  _COS    SOC_       4  ffffffff                            u32 = 0xffffffff (4294967295)
+0x0302  RCOS    SOCR       4  ffffffff                            u32 = 0xffffffff (4294967295)
+0x030e  dApC    CpAd       8  0000000000000000                    u64 = 0x0
+0x031e  dArW    WrAd       8  0000000000000000                    u64 = 0x0
+0x032e  fVED    DEVf       1  00                                  u8 = 0
+0x0337  GLFp    pFLG       8  0200000000000000                    u64 = 0x2
+0x0347  ABOI    IOBA       8  0000000000000000                    u64 = 0x0
+0x0357  ZSOI    IOSZ       4  00000000                            u32 = 0x0 (0)
+0x0363  MTTT    TTTM       4  01000000                            u32 = 0x1 (1)
+
+entries parsed: 62
+bytes consumed: 0x36f of 0x36f  (exact)
