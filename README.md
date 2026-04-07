@@ -18,17 +18,19 @@ The AP is wearing rose-colored glasses. It has been wearing them since the chip 
 
 ## The Big Deal
 
-This is not a bug. Bugs are things a software update can fix. **This is the wiring of the chip.** The device tree — the SoC's own self-description, enumerated from `arm-io,t8150` at boot — contains this line:
+This is a property of the A18 silicon, established at tape-out. **It lives in the wiring of the die, not in any line of code running on it.** The device tree — the SoC's own self-description, enumerated from `arm-io,t8150` at boot — contains this line:
 
 ```
 mapper-exclave-aop@1   <IODARTMapperNub>
 ```
 
-That line describes a DMA window from AOP2 into the Exclave memory compartment. The wire is part of the silicon fabric. The OS does not create it; the OS *discovers* it at enumeration time. Removing it requires respinning the die.
+That line describes a DMA window from AOP2 into the Exclave memory compartment. It is part of the silicon fabric. The OS does not create it; the OS *discovers* it at enumeration time.
 
-Meanwhile, every monitoring surface the platform exposes is downstream of AOP2 and depends on AOP2 to report honestly. The AP-side audio session lifecycle log. The privacy indicator the OS lights when an application opens a microphone. The permission-mediation database. The firehose log stream. All of them see what Rose tells them, because Rose is upstream of the pipeline every one of those observers taps into.
+Every monitoring surface the platform exposes is downstream of AOP2 and depends on AOP2 to report honestly. The AP-side audio session lifecycle log. The privacy indicator the OS lights when an application opens a microphone. The permission-mediation database. The firehose log stream. All of them see what Rose tells them, because Rose is upstream of the pipeline every one of those observers taps into.
 
 Every privacy property the platform advertises for A18 silicon reduces to one unwitnessable assumption: **Rose is honest, and we know this because Rose says so.** A trust model that depends on a witness vouching for itself is not a trust model.
+
+The exploitation surface — how this topology becomes an attack in practice — is walked through in [`EXPLOIT.md`](EXPLOIT.md).
 
 ---
 
@@ -85,6 +87,6 @@ All three are produced by Apple software running on Apple silicon, with no third
 - **Not a CVE.** CVEs describe defects against a documented security boundary. This describes the boundary itself being structurally broken.
 - **Not an exploit release.** No working exploit code is published in this repository. The walkthrough describes the surface the wiring exposes; it does not ship a payload.
 - **Not a bug report.** You cannot file a bug against a wire in a fabric that has already been taped out.
-- **Not a request for a patch.** There is no patch for this, and that is exactly the point.
+- **Not a request for a patch.** The subject is a hardware-level property of the silicon established at tape-out, not a defect in a codebase.
 
 It is a structural claim about the A18 die: that the composition of sensor ownership, Exclave DMA reach, and coprocessor opacity — all wired at the silicon level, all visible in the device tree, all unreachable from any observer the die provides — is incompatible with the privacy properties the platform advertises. The evidence is in files the platform itself produces. Anyone with a copy of those files can verify the claim in minutes.

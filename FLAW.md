@@ -63,17 +63,19 @@ The three properties form a closed loop with no external observer. The A18's pri
 
 ---
 
-## Why It Cannot Be Patched
+## Where The Flaw Lives
 
-| Element | Why software cannot remove it |
+The flaw is in the wiring of the A18 die, established at tape-out. Every element of the composition is described in the hardware enumeration artifacts the SoC emits at boot, before any operating system has loaded.
+
+| Element | Where it lives |
 |---|---|
-| `dart-aop@FC0000` | Part of `arm-io,t8150`. Silicon, not software. |
-| `mapper-exclave-aop@1` | Enumerated from SoC fabric. Removing it requires removing the wire. |
-| AOP2 boot | AOP2 boots from its own image at SoC power-on, before iOS exists. |
-| Exclave audio proxy | Removing it breaks "Hey Siri," Siri, and CallKit. Apple will not remove it. |
-| Remote attestation (hypothetical) | AOP2 would report its own attestation. No second processor on the die can independently witness it. |
+| `dart-aop@FC0000` | `arm-io,t8150` fabric — fixed at tape-out. |
+| `mapper-exclave-aop@1` | Child of the AOP DART in the same fabric. Enumerated by hardware discovery, not created by the OS. |
+| AOP2 boot sequence | Triggered at SoC power-on, before the AP begins executing iOS. |
+| Exclave audio proxy | Instantiated as part of the supported audio pipeline routing into the hypervisor-enforced compartment. |
+| Silicon-level opacity | A property of the relay topology: the AP's only introspection path into AOP2 is a channel AOP2 itself controls. No second observer exists on the die. |
 
-The flaw is in the wiring. It cannot be removed in software.
+The structural properties are fixed by the die's layout. The exploitation surface — how code running on AOP2 leverages those properties at runtime — is walked through in [`EXPLOIT.md`](EXPLOIT.md).
 
 ---
 
