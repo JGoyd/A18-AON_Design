@@ -106,5 +106,4 @@ Seven steps. Three files. Any A18 device. Ten minutes.
 
 ---
 
-**Disclosure tag:** `A18-AOP2-bridge-2026-04-06`
 **Author:** Joseph Goydish II
