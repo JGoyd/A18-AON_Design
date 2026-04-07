@@ -16,9 +16,9 @@ The AP is wearing rose-colored glasses. It has been wearing them since the chip 
 
 ---
 
-## The Big Deal
+## The Problem
 
-This is a property of the A18 silicon, established at tape-out. **It lives in the wiring of the die, not in any line of code running on it.** The device tree — the SoC's own self-description, enumerated from `arm-io,t8150` at boot — contains this line:
+This is a property of the A18 silicon, established at tape-out. **It lives in the wiring of the die, not in any line of code running on it.** The device tree... the SoC's own self-description, enumerated from `arm-io,t8150` at boot — contains this line:
 
 ```
 mapper-exclave-aop@1   <IODARTMapperNub>
@@ -42,10 +42,10 @@ The exploitation surface — how this topology becomes an attack in practice —
 | Silicon identifier | `t8150` |
 | Fabric | `arm-io,t8150` |
 | Coprocessor | AOP2 — Always-On Processor, second generation |
-| Coprocessor harness | `RTBuddy(AOP2)` — `IOSlaveProcessor` |
+| Coprocessor harness | `RTBuddy(AOP2)` `IOSlaveProcessor` |
 | Coprocessor kext | `com.apple.driver.AppleAOP2` |
 | Coprocessor IOMMU | `dart-aop@FC0000` with mapper nubs `mapper-aop@0` and `mapper-exclave-aop@1` |
-| Coprocessor firmware | `aopfw-rose.macho` — codename **Rose** |
+| Coprocessor firmware | `aopfw-rose.macho`  codename **Rose** |
 | Firmware SHA-256 | `dc6bda7e7003413cddf3f0264edf6a445c10555b9e2d2d45906ddb0ec332135d` |
 | Firmware type | Mach-O 64-bit arm64 preload executable, `NOUNDEFS` |
 | Adjacent silicon | SEP (Secure Enclave Processor), SPU (Secure Processing Unit), Exclave compartment |
@@ -89,4 +89,4 @@ All three are produced by Apple software running on Apple silicon, with no third
 - **Not a bug report.** You cannot file a bug against a wire in a fabric that has already been taped out.
 - **Not a request for a patch.** The subject is a hardware-level property of the silicon established at tape-out, not a defect in a codebase.
 
-It is a structural claim about the A18 die: that the composition of sensor ownership, Exclave DMA reach, and coprocessor opacity — all wired at the silicon level, all visible in the device tree, all unreachable from any observer the die provides — is incompatible with the privacy properties the platform advertises. The evidence is in files the platform itself produces. Anyone with a copy of those files can verify the claim in minutes.
+It is a structural claim about the A18 die: that the composition of sensor ownership, Exclave DMA reach, and coprocessor opacity... all wired at the silicon level, all visible in the device tree, all unreachable from any observer the die provides is incompatible with the privacy properties the platform advertises. The evidence is in files the platform itself produces. 
