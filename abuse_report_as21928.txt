@@ -1,119 +1,153 @@
 To: abuse@t-mobile.com
 From: <YOUR_EMAIL>
-Subject: AS21928 - Inquiry re: Apple telemetry CDN node operating from
-         T-Mobile carrier address space (pancake.apple.com)
+Subject: AS21928 - Inquiry: Apple CDN edge serving pancake.apple.com from
+         T-Mobile address space (TMOV6-1 / TMO2, Dallas footprint)
 
 Hello T-Mobile Abuse Team,
 
 I am writing in your capacity as the registered abuse contact for
-AS21928 (T-Mobile USA, Inc., handle ABUSE4857-ARIN, validated via ARIN
-RDAP at https://rdap.arin.net/registry/autnum/21928).
+AS21928 (T-Mobile USA, Inc., handle ABUSE4857-ARIN, status validated,
+per ARIN RDAP at https://rdap.arin.net/registry/autnum/21928).
 
-This is not a report of subscriber abuse. It is a network-operator
-inquiry about infrastructure observed inside your AS, and a request
-that the matter be routed to whichever team within T-Mobile is best
-positioned to clarify it.
-
-------------------------------------------------------------------------
-SUMMARY
-------------------------------------------------------------------------
-A reproducible architecture analysis (linked below) shows that the
-host `pancake.apple.com` -- the endpoint from which iOS devices fetch
-the plist-encoded "bag" that configures telemetry filtering for the
-`rtcreportingd` daemon and several other Apple processes -- is being
-served from a CDN node deployed inside T-Mobile USA address space,
-i.e. inside AS21928.
-
-The placement is reproducible from any iOS device on a stock OS, using
-only Apple-provided diagnostic tooling. No third-party instrumentation
-is required.
+This is not a report of subscriber abuse and does not allege any
+compromise. It is a network-operator inquiry about Apple CDN
+infrastructure observed serving from inside AS21928, with a request
+that this message be routed to the team within T-Mobile responsible
+for on-net cache / CDN interconnect arrangements.
 
 ------------------------------------------------------------------------
-WHY THIS IS BEING REPORTED TO T-MOBILE
+WHAT WAS OBSERVED
 ------------------------------------------------------------------------
-The pancake.apple.com bag is the configuration surface that decides
-which fields are stripped from iOS telemetry before it is uploaded.
-In the captured responses:
+Between 2026-03-22 and 2026-04-06, captures of `rtcreportingd` traffic
+on iOS (builds 23E246, 23D8133, 23D771330a) showed the host
+`pancake.apple.com` being served from IPv6 addresses inside T-Mobile
+USA address space:
 
-  - Identifying fields such as `_clientName`, `_clientVersion`, and
-    `_sender` are removed by the bag rules.
-  - Content metadata (hostnames, URIs, byte counts, sync state) is
-    preserved and forwarded.
-  - The bag responses themselves carry no content-level cryptographic
-    signature -- their integrity is bound only to TLS to the serving
-    node.
+    2607:fb90:c12f:180::1     2607:fb90::/28  (TMOV6-1)  AS21928
+    2607:fb90:c115:180::2     2607:fb90::/28  (TMOV6-1)  AS21928
+    2607:fb90:c110:180::1     2607:fb90::/28  (TMOV6-1)  AS21928
 
-A serving node for that bag living in carrier address space rather
-than in Apple-registered space is, at minimum, an undocumented
-deployment topology. As the operator of AS21928, T-Mobile is the only
+For comparison, parallel resolutions of the same hostname returned
+addresses inside Apple-registered space (AS714):
+
+    17.253.21.135             17.0.0.0/8       (APPLE-WWNET)  AS714
+    17.253.21.148             17.0.0.0/8       (APPLE-WWNET)  AS714
+    2620:149:a10:f000::149    2620:149::/32    (APPLE-WWNET)  AS714
+
+A representative HTTP `Via` header from a `pancake.apple.com` response
+served out of the T-Mobile-space addresses:
+
+    Via: http/1.1 usdal2-edge-fx-004.ts.apple.com (acdn/302.16436),
+         http/1.1 tmobileusa-usdal1a-fe-003.ec.edge.apple (acdn/260.16276)
+
+Both `ts.apple.com` and `ec.edge.apple` are Apple-operated CDN domains.
+The `tmobileusa-usdal1a` hostname segment indicates an Apple CDN edge
+deployed inside T-Mobile USA's Dallas-area footprint.
+
+The fetching client identifies as:
+
+    User-Agent: rtcreportingd/166.2 CFNetwork/3860.500.112 Darwin/25.4.0
+
+Requests follow the bag URL pattern:
+
+    /bags/maple/355f5e74848522db142812706d3559c35daf9f66536507b4f5bf7ad3e1f68575/{leaf}
+
+with leaves observed of `repo`, `ca`, `nimbus`, `coremedia`, `tu`,
+`wings`, and `mexp`. Responses are plist-encoded telemetry-filter
+"bags" consumed by `rtcreportingd` and applied to telemetry from at
+least five Apple client pipelines (`com.apple.imagent`,
+`com.apple.aaa`, `com.apple.aaa.dnu`, `com.apple.C2ReportMetrics`,
+`com.apple.groupkit`) before that telemetry is posted back to
+`https://metrics.icloud.com/rtc/v1`.
+
+------------------------------------------------------------------------
+WHY THIS IS BEING SENT TO T-MOBILE
+------------------------------------------------------------------------
+The bag responses carry no content-level signature header
+(`Content-Signature`, `X-Apple-Signature`, or equivalent). Their
+integrity is bound only to the TLS session terminated at the serving
+node. Whoever can serve content for `pancake.apple.com` from a given
+edge therefore controls the telemetry-filter rules applied on the
+receiving device for the duration of that session.
+
+That makes the identity and authorization of the serving edge a
+material question. As the operator of AS21928, T-Mobile is the only
 party who can confirm:
 
-  1. Whether the IP(s) serving pancake.apple.com inside AS21928 are
-     in fact assigned to Apple under a hosting / interconnect /
-     on-net-cache arrangement, or are otherwise authorized to serve
-     that hostname from your network.
-  2. Whether that arrangement is publicly documented anywhere, and
-     if so, where.
-  3. Which T-Mobile contact is appropriate for follow-up technical
+  1. Whether the `2607:fb90:c12f:180::1`, `2607:fb90:c115:180::2`, and
+     `2607:fb90:c110:180::1` addresses (and any siblings inside
+     `2607:fb90::/28` / `2607:7700::/32`) are assigned to Apple under
+     a documented on-net cache / interconnect / hosting arrangement.
+  2. Whether the Apple CDN edge identified as
+     `tmobileusa-usdal1a-fe-003.ec.edge.apple` is operating from
+     T-Mobile-controlled infrastructure with T-Mobile's authorization,
+     and under what contractual basis.
+  3. Whether that arrangement is publicly documented anywhere
+     (peering DB entry, transparency report, MAPS/CDN partner page,
+     regulatory filing) that an external researcher can cite.
+  4. Which T-Mobile contact is appropriate for follow-up technical
      questions about the deployment.
-
-------------------------------------------------------------------------
-OBSERVED DETAILS (please fill in / verify before sending)
-------------------------------------------------------------------------
-Hostname observed       : pancake.apple.com
-Resolved IP(s) in-AS    : <SERVING_IP_OR_RANGE>
-Source ASN of IP(s)     : AS21928 (T-Mobile USA, Inc.)
-rDNS / PTR (if any)     : <PTR_RECORD>
-First observed (UTC)    : <YYYY-MM-DD HH:MM:SS>
-Last observed (UTC)     : <YYYY-MM-DD HH:MM:SS>
-Client-side daemons     : rtcreportingd, imagent, aaa, aaa.dnu,
-                          C2ReportMetrics, groupkit
-Network telemetry rate  : sampled at ~0.1% on the client side
 
 ------------------------------------------------------------------------
 SUPPORTING RESEARCH
 ------------------------------------------------------------------------
-Full reproducible analysis, including the decoded bag contents, the
-list of consuming daemons, and the reproduction steps using Apple's
-own tooling:
+Full reproducible analysis -- decoded bag contents, the complete
+filter rule tables, the `rtcreportingd` internal-buffer cross-check,
+and the verification steps using only Proxyman and Apple-provided
+tooling -- is published at:
 
     https://github.com/JGoyd/MapleDrop
 
-Adjacent silicon-level analysis of the always-on coprocessor (AOP2)
-that owns the sensors on Apple A18, for context on why telemetry
-provenance matters at this layer:
+Adjacent silicon-level analysis (Apple A18 / AOP2 / Rose firmware)
+that motivated looking at the telemetry layer in the first place:
 
     https://github.com/JGoyd/A18-AON_Design
 
-Both repositories are public, contain no exploit code, and document
-only properties that are visible in artifacts the platform itself
-produces.
+Both repositories are public, contain no exploit code or working
+attack payload, and document only properties visible in artifacts
+that the platform itself produces.
 
 ------------------------------------------------------------------------
-WHOIS / RDAP REFERENCE
+WHOIS / RDAP REFERENCES
 ------------------------------------------------------------------------
-ARIN RDAP lookup for AS21928:
+ARIN RDAP, AS21928 (abuse contact for this report):
 
-    Source        : https://rdap.arin.net/registry/autnum/21928
-    Organization  : T-Mobile USA, Inc.
-    Abuse handle  : ABUSE4857-ARIN  (status: validated)
-    Abuse email   : abuse@t-mobile.com
-    Abuse phone   : +1-888-662-4662
+    https://rdap.arin.net/registry/autnum/21928
+        Organization  : T-Mobile USA, Inc.
+        Abuse handle  : ABUSE4857-ARIN  (status: validated)
+        Abuse email   : abuse@t-mobile.com
+        Abuse phone   : +1-888-662-4662
+
+ARIN RDAP, address-level attribution of the serving IPs:
+
+    https://rdap.arin.net/registry/ip/2607:fb90:c12f:180::1
+    https://rdap.arin.net/registry/ip/2607:7700::
+
+For comparison, Apple-registered space:
+
+    https://stat.ripe.net/data/whois/data.json?resource=2620:149::/32
 
 ------------------------------------------------------------------------
 REQUESTED ACTION
 ------------------------------------------------------------------------
 I am not asking T-Mobile to take action against any subscriber. I am
 asking that this message be routed internally to the team responsible
-for on-net cache / CDN interconnect arrangements in AS21928, and that
-T-Mobile confirm or deny -- on the record -- whether the serving of
-`pancake.apple.com` from inside AS21928 is an authorized, documented
-deployment, and where that documentation lives.
+for on-net cache / CDN interconnect deployments inside AS21928, and
+that T-Mobile confirm or deny -- on the record -- whether the serving
+of `pancake.apple.com` from the addresses listed above is an
+authorized, documented deployment, and where (if anywhere) that
+documentation lives.
 
-I would appreciate an acknowledgement of receipt, a ticket or
-reference number if one is opened, and a substantive reply when one
-is available. I am happy to provide additional captures, resolver
-output, or TLS handshake transcripts on request.
+I would appreciate:
+
+  - An acknowledgement of receipt.
+  - A ticket or reference number, if one is opened.
+  - A substantive reply when one is available.
+
+I am happy to provide additional captures, the raw response headers,
+the decoded bag plists, or the `rtcreportingd` internal-buffer
+excerpt on request -- all of these are also already published at the
+MapleDrop repository linked above.
 
 Thank you for your time.
 
