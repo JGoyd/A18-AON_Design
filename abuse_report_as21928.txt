@@ -1,0 +1,71 @@
+To: abuse@t-mobile.com
+From: <YOUR_EMAIL>
+Subject: Abuse Report - AS21928 - <BRIEF_DESCRIPTION> - <YYYY-MM-DD>
+
+Hello T-Mobile Abuse Team,
+
+I am writing to report abusive network activity originating from an IP
+address within AS21928 (T-Mobile USA, Inc.). The relevant details are
+provided below. All timestamps are in UTC unless otherwise noted.
+
+------------------------------------------------------------------------
+INCIDENT SUMMARY
+------------------------------------------------------------------------
+Type of abuse        : <e.g. SSH brute-force / port scanning / spam /
+                       phishing / malware C2 / DDoS / other>
+Source IP address    : <SOURCE_IP>
+Source ASN           : AS21928 (T-Mobile USA, Inc.)
+Source rDNS (if any) : <PTR_RECORD>
+Destination IP       : <DEST_IP>
+Destination port(s)  : <DEST_PORTS>
+Protocol             : <TCP/UDP/ICMP>
+First observed (UTC) : <YYYY-MM-DD HH:MM:SS>
+Last observed (UTC)  : <YYYY-MM-DD HH:MM:SS>
+Total events         : <COUNT>
+
+------------------------------------------------------------------------
+DESCRIPTION
+------------------------------------------------------------------------
+<Describe what happened in 2-5 sentences. Include why you believe this
+is malicious or abusive, what systems were targeted, and any impact.>
+
+------------------------------------------------------------------------
+EVIDENCE / LOG EXCERPT
+------------------------------------------------------------------------
+<Paste the relevant raw log lines below. Keep timestamps, source IPs,
+ports, and any identifying request strings. Trim to the minimum that
+demonstrates the abuse.>
+
+    <log line 1>
+    <log line 2>
+    <log line 3>
+    ...
+
+------------------------------------------------------------------------
+WHOIS / RDAP REFERENCE
+------------------------------------------------------------------------
+ARIN RDAP lookup confirms that AS21928 is registered to T-Mobile USA,
+Inc., with the abuse contact role assigned to abuse@t-mobile.com
+(handle ABUSE4857-ARIN, status: validated).
+
+Source        : https://rdap.arin.net/registry/autnum/21928
+Abuse handle  : ABUSE4857-ARIN
+Abuse email   : abuse@t-mobile.com
+Abuse phone   : +1-888-662-4662
+
+------------------------------------------------------------------------
+REQUESTED ACTION
+------------------------------------------------------------------------
+Please investigate the activity above and take appropriate action with
+the subscriber responsible for the source address. I would appreciate
+an acknowledgement of this report and, if possible, a brief note once
+the matter has been addressed. I am happy to provide additional logs
+or packet captures on request.
+
+Thank you for your time.
+
+Regards,
+<YOUR_NAME>
+<YOUR_ORGANIZATION (optional)>
+<YOUR_EMAIL>
+<YOUR_PHONE (optional)>
