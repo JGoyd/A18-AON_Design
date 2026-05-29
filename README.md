@@ -1,5 +1,8 @@
 # The Always-On Blind Spot
 
+**[Status: Verified Disclosure]**
+
+
 #### A die-level study of AOP2... the Always-On Processor on the Apple A18. It owns the microphone, the touch digitizer, and the radios. It has a hardware DMA window into the most privileged memory compartment on the chip. And nothing else on the die is positioned to watch it.
 
 ---
